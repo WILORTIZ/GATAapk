@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Plus, Bell, RefreshCw } from 'lucide-react';
+import { Plus, Bell, RefreshCw, LogOut } from 'lucide-react';
 import { formatearMoneda } from '../utils/formatters';
 
 interface NavbarProps {
@@ -8,7 +8,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenAgregarTurno }) => {
-  const { vistaActiva, metricas } = useApp();
+  const { vistaActiva, metricas, cerrarSesion } = useApp();
 
   const getTituloVista = () => {
     switch (vistaActiva) {
@@ -66,6 +66,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAgregarTurno }) => {
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span className="hidden sm:inline">Agregar Turno Hoy</span>
             <span className="sm:hidden">Turno</span>
+          </button>
+
+          {/* Botón Salir */}
+          <button
+            onClick={cerrarSesion}
+            title="Cerrar Sesión"
+            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>

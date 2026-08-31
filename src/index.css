@@ -18,6 +18,11 @@ body {
   padding-bottom: var(--sab);
 }
 
+/* Elevación segura para barra de navegación en teléfonos Android */
+.pb-nav-safe {
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+}
+
 /* Custom scrollbar for clean light mode */
 ::-webkit-scrollbar {
   width: 6px;

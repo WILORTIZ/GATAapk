@@ -36,7 +36,13 @@ interface AppContextType {
     valorPersonalizado?: number;
   }) => { turno?: Turno; esDuplicado?: boolean };
   actualizarTurno: (turno: Turno) => void;
+  eliminarTurno: (id: string) => void;
   anularTurno: (id: string) => void;
+
+  // Autenticación
+  autenticado: boolean;
+  iniciarSesion: (usuario: string, clave: string) => boolean;
+  cerrarSesion: () => void;
   verificarTurnoDuplicado: (clienteId: string, fecha: string) => boolean;
 
   // Acciones Cobros
@@ -121,6 +127,26 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [vistaActiva, setVistaActiva] = useState<VistaActiva>('inicio');
   const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState<string | null>(null);
+
+  const [autenticado, setAutenticado] = useState<boolean>(() => {
+    return localStorage.getItem('gata_sesion_activa_v1') === 'true';
+  });
+
+  const iniciarSesion = (usuario: string, clave: string): boolean => {
+    const userClean = usuario.trim().toLowerCase();
+    const passClean = clave.trim();
+    if (userClean === 'gata' && passClean === '924') {
+      setAutenticado(true);
+      localStorage.setItem('gata_sesion_activa_v1', 'true');
+      return true;
+    }
+    return false;
+  };
+
+  const cerrarSesion = () => {
+    setAutenticado(false);
+    localStorage.removeItem('gata_sesion_activa_v1');
+  };
 
   // Inicializar estado desde LocalStorage o MockData
   const [clientes, setClientes] = useState<Cliente[]>(() => {
@@ -243,6 +269,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       estado: 'Anulado',
       fechaModificacion: ahora
     } : t));
+  };
+
+  const eliminarTurno = (id: string) => {
+    setTurnos(prev => prev.filter(t => t.id !== id));
   };
 
   // Gestión de Cobros y Aislamiento de Clientes
@@ -582,7 +612,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       eliminarCliente,
       agregarTurno,
       actualizarTurno,
+      eliminarTurno,
       anularTurno,
+      autenticado,
+      iniciarSesion,
+      cerrarSesion,
       verificarTurnoDuplicado,
       cobrarTurnoIndividual,
       cobrarTurnosMultiples,

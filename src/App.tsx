@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { BottomNavigation } from './components/BottomNavigation';
 import { DesktopSidebar, MenuDrawer } from './components/Sidebar';
 import { ModalAgregarTurnoHoy } from './components/ModalAgregarTurnoHoy';
+import { LoginView } from './components/LoginView';
 import { DashboardView } from './views/DashboardView';
 import { ClientesView } from './views/ClientesView';
 import { CalendarioView } from './views/CalendarioView';
@@ -15,9 +16,14 @@ import { ReportesView } from './views/ReportesView';
 import { ConfiguracionView } from './views/ConfiguracionView';
 
 export const App: React.FC = () => {
-  const { vistaActiva } = useApp();
+  const { vistaActiva, autenticado } = useApp();
   const [modalAgregarTurnoOpen, setModalAgregarTurnoOpen] = useState(false);
   const [menuDrawerOpen, setMenuDrawerOpen] = useState(false);
+
+  // Si no ha iniciado sesión, mostrar pantalla de Login (usuario: gata, clave: 924)
+  if (!autenticado) {
+    return <LoginView />;
+  }
 
   const renderVista = () => {
     switch (vistaActiva) {
@@ -53,7 +59,7 @@ export const App: React.FC = () => {
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
         <DesktopSidebar />
 
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full pb-24 md:pb-12">
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full pb-36 md:pb-12">
           {renderVista()}
         </main>
       </div>
