@@ -102,11 +102,11 @@ interface AppContextType {
 }
 
 const STORAGE_KEYS = {
-  CLIENTES: 'gata_clientes_v2',
-  TURNOS: 'gata_turnos_v2',
-  COBROS: 'gata_cobros_v2',
-  CIERRES: 'gata_cierres_v2',
-  CONFIG: 'gata_config_v2'
+  CLIENTES: 'gata_clientes_v3',
+  TURNOS: 'gata_turnos_v3',
+  COBROS: 'gata_cobros_v3',
+  CIERRES: 'gata_cierres_v3',
+  CONFIG: 'gata_config_v3'
 };
 
 const CONFIG_DEFAULT: ConfiguracionApp = {

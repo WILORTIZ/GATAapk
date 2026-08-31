@@ -10,6 +10,7 @@ export interface Cliente {
   estado: EstadoCliente;
   fechaCreacion: string;
   observacionesGenerales?: string;
+  color?: string;
 }
 
 export type EstadoTurno = 'Realizado' | 'Por cobrar' | 'Cobrado' | 'Anulado';
