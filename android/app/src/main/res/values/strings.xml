@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GATA</string>
+    <string name="title_activity_main">GATA</string>
+    <string name="package_name">com.gata.turnos</string>
+    <string name="custom_url_scheme">com.gata.turnos</string>
+</resources>

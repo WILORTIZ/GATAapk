@@ -1,0 +1,22 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs (excluding root APK)
+dist/
+dist-ssr/
+*.local
+
+# Gradle & Android build caches
+.gradle/
+android/.gradle/
+android/build/
+android/app/build/
+android/captures/
+android/local.properties
+
+# OS files
+.DS_Store
+Thumbs.db
