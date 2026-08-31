@@ -17,7 +17,6 @@ import {
   Trash2,
   Layers
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 export const CierresView: React.FC = () => {
   const { clientes, turnos, cierres, guardarCierre, eliminarCierre } = useApp();
@@ -117,15 +116,6 @@ export const CierresView: React.FC = () => {
     };
 
     guardarCierre(nuevoCierre);
-
-    try {
-      confetti({
-        particleCount: 45,
-        spread: 60,
-        origin: { y: 0.7 }
-      });
-    } catch {}
-
     setTabActual('historicos');
   };
 

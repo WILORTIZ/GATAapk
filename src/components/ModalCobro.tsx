@@ -18,7 +18,6 @@ import {
   CheckCircle2,
   Clock
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 export type ModoCobro = 'individual' | 'multiples' | 'rango' | 'parcial' | 'todo';
 
@@ -53,7 +52,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
   const [turnoIdIndividual, setTurnoIdIndividual] = useState<string>(turnoIdInicial || '');
   const [turnosSeleccionadosIds, setTurnosSeleccionadosIds] = useState<string[]>(turnosIdsIniciales);
 
-  // Rango de fechas: inicializar con fecha amplia para capturar turnos actuales
+  // Rango de fechas
   const [fechaDesde, setFechaDesde] = useState<string>('2026-08-01');
   const [fechaHasta, setFechaHasta] = useState<string>('2026-08-31');
 
@@ -66,6 +65,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
   const [metodoPago, setMetodoPago] = useState<MetodoPago>('Transferencia');
   const [observacionPago, setObservacionPago] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
+  const [exitoMsg, setExitoMsg] = useState<string>('');
 
   // Sincronizar estado al abrir el modal
   useEffect(() => {
@@ -74,10 +74,10 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
       setFechaPago(getHoyFechaStr());
       setObservacionPago('');
       setErrorMsg('');
+      setExitoMsg('');
 
       let cid = clienteIdInicial || '';
       if (!cid && clientes.length > 0) {
-        // Seleccionar el primer cliente que tenga turnos pendientes
         const cliConDeuda = clientes.find(c => 
           turnos.some(t => t.clienteId === c.id && (t.estado === 'Por cobrar' || t.estado === 'Realizado'))
         );
@@ -103,12 +103,11 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
         if (!turnoIdInicial || !pendientes.some(t => t.id === turnoIdInicial)) {
           setTurnoIdIndividual(pendientes[0].id);
         }
-        // Ajustar fechas rango
         setFechaDesde(pendientes[0].fecha);
         setFechaHasta(pendientes[pendientes.length - 1].fecha);
       } else {
-        setFechaDesde('2026-08-01');
-        setFechaHasta('2026-08-31');
+        setFechaDesde(getHoyFechaStr());
+        setFechaHasta(getHoyFechaStr());
       }
 
       if (turnosIdsIniciales.length > 0) {
@@ -121,10 +120,11 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
     }
   }, [isOpen, modoInicial, clienteIdInicial, turnoIdInicial, turnosIdsIniciales, clientes, turnos]);
 
-  // Cuando cambia el cliente en el select, actualizar turnos por defecto
+  // Cuando cambia el cliente en el select
   const handleCambioCliente = (nuevoClienteId: string) => {
     setClienteId(nuevoClienteId);
     setErrorMsg('');
+    setExitoMsg('');
 
     const pendientes = turnos.filter(t => 
       t.clienteId === nuevoClienteId && (t.estado === 'Por cobrar' || t.estado === 'Realizado')
@@ -138,6 +138,8 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
     } else {
       setTurnoIdIndividual('');
       setTurnosSeleccionadosIds([]);
+      setFechaDesde(getHoyFechaStr());
+      setFechaHasta(getHoyFechaStr());
     }
   };
 
@@ -145,7 +147,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
 
   const clienteSeleccionado = clientes.find(c => c.id === clienteId);
 
-  // Turnos pendientes de este cliente específico (Aislamiento de clientes)
+  // Turnos pendientes de este cliente
   const turnosPendientesCliente = turnos.filter(t => 
     t.clienteId === clienteId && 
     (t.estado === 'Por cobrar' || t.estado === 'Realizado')
@@ -170,7 +172,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
 
   // Cálculo parcial
   const valorParcialNum = parseFloat(montoParcial) || 0;
-  const turnosAfectadosAuto = useMemo(() => {
+  const turnosAfectadosAuto = () => {
     let acum = 0;
     const lista: Turno[] = [];
     for (const t of turnosPendientesCliente) {
@@ -180,7 +182,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
       }
     }
     return lista;
-  }, [turnosPendientesCliente, valorParcialNum]);
+  };
 
   // Monto total a cobrar según modo
   let totalACobrar = 0;
@@ -204,6 +206,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
 
   const handleConfirmarCobro = () => {
     setErrorMsg('');
+    setExitoMsg('');
 
     if (!clienteId) {
       setErrorMsg('Selecciona un cliente.');
@@ -270,17 +273,12 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
         );
       }
 
-      try {
-        confetti({
-          particleCount: 45,
-          spread: 60,
-          origin: { y: 0.7 }
-        });
-      } catch {}
-
-      onClose();
+      setExitoMsg('¡Cobro registrado exitosamente!');
+      setTimeout(() => {
+        onClose();
+      }, 350);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Error al procesar el cobro.');
+      setErrorMsg(err?.message || 'Error al procesar el cobro.');
     }
   };
 
@@ -308,7 +306,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
         </div>
 
         {/* Modal Content */}
-        <div className="p-5 sm:p-6 space-y-4 max-h-[82vh] overflow-y-auto">
+        <div className="p-5 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           
           {/* Tabs de Modo de Cobro */}
           <div className="flex bg-slate-100 p-1 rounded-2xl gap-1 overflow-x-auto text-xs font-bold">
@@ -365,7 +363,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
           </div>
 
           {/* ======================================================== */}
-          {/* MODO 1: INDIVIDUAL (Sección 13 del PDF)                  */}
+          {/* MODO 1: INDIVIDUAL                                       */}
           {/* ======================================================== */}
           {modo === 'individual' && (
             <div className="space-y-3">
@@ -384,7 +382,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
                   <p className="font-bold text-slate-700">Este cliente no tiene turnos pendientes por cobrar.</p>
                 </div>
               ) : (
-                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {turnosPendientesCliente.map(t => {
                     const isSelected = (turnoIndividual?.id === t.id);
                     return (
@@ -425,7 +423,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
           )}
 
           {/* ======================================================== */}
-          {/* MODO 2: VARIOS SELECCIONADOS (Sección 14 del PDF)       */}
+          {/* MODO 2: VARIOS SELECCIONADOS                             */}
           {/* ======================================================== */}
           {modo === 'multiples' && (
             <div className="space-y-3">
@@ -453,7 +451,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
                   No hay turnos pendientes para este cliente.
                 </div>
               ) : (
-                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {turnosPendientesCliente.map(t => {
                     const isChecked = turnosSeleccionadosIds.includes(t.id);
                     return (
@@ -496,12 +494,12 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
           )}
 
           {/* ======================================================== */}
-          {/* MODO 3: POR RANGO DE FECHAS (Sección 15 del PDF)         */}
+          {/* MODO 3: POR RANGO DE FECHAS                              */}
           {/* ======================================================== */}
           {modo === 'rango' && (
             <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                Selecciona Rango de Fechas (Aislamiento: Solo {clienteSeleccionado?.nombre}):
+                Selecciona Rango de Fechas ({clienteSeleccionado?.nombre}):
               </span>
               
               <div className="grid grid-cols-2 gap-3">
@@ -525,11 +523,11 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
                 </div>
               </div>
 
-              {/* LISTA VISUAL DE TURNOS EN EL RANGO SELECCIONADO */}
+              {/* LISTA VISUAL DE TURNOS EN EL RANGO */}
               <div className="pt-2 border-t border-slate-200 space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-700">
-                    Turnos encontrados en el rango ({turnosEnRango.length}):
+                    Turnos en el rango ({turnosEnRango.length}):
                   </span>
                   <span className="font-black text-emerald-700 text-sm">
                     Subtotal: {formatearMoneda(totalRango)}
@@ -538,10 +536,10 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
 
                 {turnosEnRango.length === 0 ? (
                   <div className="p-3 bg-white border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-500">
-                    No hay turnos pendientes entre el {formatearFechaCorta(fechaDesde)} y el {formatearFechaCorta(fechaHasta)}.
+                    No hay turnos pendientes entre {formatearFechaCorta(fechaDesde)} y {formatearFechaCorta(fechaHasta)}.
                   </div>
                 ) : (
-                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                     {turnosEnRango.map(t => (
                       <div key={t.id} className="p-2.5 bg-white rounded-xl border border-slate-200 text-xs flex items-center justify-between shadow-2xs">
                         <div>
@@ -559,7 +557,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
           )}
 
           {/* ======================================================== */}
-          {/* MODO 4: PAGO PARCIAL (Sección 17 y 18 del PDF)           */}
+          {/* MODO 4: PAGO PARCIAL                                     */}
           {/* ======================================================== */}
           {modo === 'parcial' && (
             <div className="space-y-3 p-4 bg-amber-50/60 rounded-2xl border border-amber-200">
@@ -607,12 +605,12 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
                 </div>
               </div>
 
-              {/* Vista previa de afectación */}
+              {/* Vista previa */}
               <div className="bg-white p-3 rounded-xl border border-amber-200 text-xs space-y-1">
                 <div className="flex justify-between text-slate-600">
                   <span>Turnos que se marcarán cobrados:</span>
                   <span className="font-bold text-slate-800">
-                    {distribucionModo === 'auto' ? turnosAfectadosAuto.length : turnosSeleccionadosIds.length} turnos
+                    {distribucionModo === 'auto' ? turnosAfectadosAuto().length : turnosSeleccionadosIds.length} turnos
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-600">
@@ -640,7 +638,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
             </div>
           )}
 
-          {/* DETALLES DEL PAGO (Método, Fecha, Observaciones) */}
+          {/* DETALLES DEL PAGO */}
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
               Detalles de la Transacción
@@ -687,7 +685,7 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
             </div>
           </div>
 
-          {/* Resumen Total Destacado */}
+          {/* Resumen Total */}
           <div className="p-4 bg-emerald-600 text-white rounded-2xl flex items-center justify-between shadow-lg shadow-emerald-600/20">
             <div>
               <span className="text-xs font-semibold text-emerald-100 uppercase tracking-wider block">Total a Recibir</span>
@@ -705,6 +703,13 @@ export const ModalCobro: React.FC<ModalCobroProps> = ({
             <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {exitoMsg && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              <span>{exitoMsg}</span>
             </div>
           )}
         </div>

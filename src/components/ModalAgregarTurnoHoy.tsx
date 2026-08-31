@@ -3,7 +3,6 @@ import { useApp } from '../context/AppContext';
 import { getHoyFechaStr, getDiaSemana, formatearFechaCompleta, formatearFechaCorta } from '../utils/dateUtils';
 import { formatearMoneda } from '../utils/formatters';
 import { Calendar, AlertTriangle, Plus, X, Check, User, DollarSign, FileText } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 interface ModalAgregarTurnoHoyProps {
   isOpen: boolean;
@@ -96,17 +95,6 @@ export const ModalAgregarTurnoHoy: React.FC<ModalAgregarTurnoHoyProps> = ({
       observaciones: observaciones.trim() || undefined,
       valorPersonalizado: usarValorPersonalizado ? valorFinal : undefined
     });
-
-    // Celebración visual ligera
-    try {
-      confetti({
-        particleCount: 35,
-        spread: 60,
-        origin: { y: 0.85 }
-      });
-    } catch {
-      // Ignorar si confetti falla
-    }
 
     onClose();
   };
